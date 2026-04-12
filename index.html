@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator Kayu Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<style>
+  :root {
+    --green-dark: #1a4731;
+    --green-mid: #2d6a4f;
+    --green-light: #40916c;
+    --green-pale: #d8f3dc;
+    --green-xpale: #f0faf2;
+    --amber: #f4a261;
+    --amber-pale: #fff3e0;
+    --blue: #4895ef;
+    --blue-pale: #e8f4fd;
+    --red: #e63946;
+    --red-pale: #fdecea;
+    --gray-900: #1a1a2e;
+    --gray-700: #374151;
+    --gray-500: #6b7280;
+    --gray-300: #d1d5db;
+    --gray-100: #f3f4f6;
+    --white: #ffffff;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #f0f4f0;
+    color: var(--gray-700);
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 100%);
+    color: white;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    position: sticky; top: 0; z-index: 100;
+  }
+  header .logo-icon {
+    width: 42px; height: 42px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  header p { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+  header .header-right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .header-badge {
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* LAYOUT */
+  .main-wrap { max-width: 1400px; margin: 0 auto; padding: 24px 20px; }
+
+  /* STAT CARDS */
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+  .stat-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-300);
+    transition: box-shadow 0.2s;
+  }
+  .stat-card:hover { box-shadow: var(--shadow-md); }
+  .stat-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .stat-icon.green { background: var(--green-pale); }
+  .stat-icon.amber { background: var(--amber-pale); }
+  .stat-icon.blue  { background: var(--blue-pale); }
+  .stat-label { font-size: 12px; color: var(--gray-500); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-value { font-size: 22px; font-weight: 700; color: var(--gray-900); font-family: inherit; margin-top: 2px; }
+
+  /* TWO COLUMN */
+  .two-col { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+  .left-col { display: flex; flex-direction: column; gap: 20px; }
+  .right-col { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 90px; }
+
+  /* CARDS */
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-300);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .card-header h2 { font-size: 15px; font-weight: 700; color: var(--gray-900); display: flex; align-items: center; gap: 8px; }
+  .card-body { padding: 20px; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.18s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .btn-primary { background: var(--green-mid); color: white; }
+  .btn-primary:hover { background: var(--green-dark); transform: translateY(-1px); }
+  .btn-danger { background: var(--red-pale); color: var(--red); border: 1px solid #fca5a5; }
+  .btn-danger:hover { background: #fee2e2; }
+  .btn-outline { background: white; color: var(--gray-700); border: 1px solid var(--gray-300); }
+  .btn-outline:hover { background: var(--gray-100); }
+  .btn-sm { padding: 5px 11px; font-size: 12px; }
+  .btn-excel { background: #1a7a3c; color: white; }
+  .btn-excel:hover { background: #145e2d; }
+  .btn-pdf { background: #c0392b; color: white; }
+  .btn-pdf:hover { background: #a93226; }
+  .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* TABLE DATA ACUAN */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: var(--green-dark);
+    color: white;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--gray-100); white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--green-xpale); }
+  .table-empty { text-align: center; color: var(--gray-500); padding: 28px; font-size: 13px; }
+  .golongan-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+    background: var(--green-pale);
+    color: var(--green-dark);
+  }
+
+  /* FORM ADD ACUAN */
+  .acuan-form-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr) auto; /* lingkar min, max, tengah, kubik, gol, btn */
+    gap: 10px;
+    align-items: end;
+    background: var(--green-xpale);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    margin-top: 14px;
+    border: 1px dashed var(--green-light);
+  }
+  .form-group label { font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 5px; display: block; }
+  .form-group input, .form-group select {
+    width: 100%;
+    padding: 8px 11px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    color: var(--gray-700);
+    background: white;
+    transition: border-color 0.18s;
+  }
+  .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--green-light); box-shadow: 0 0 0 3px rgba(64,145,108,0.12); }
+
+  /* INPUT POHON */
+  .input-pohon-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 14px;
+  }
+  .preview-box {
+    background: var(--green-xpale);
+    border: 1px solid var(--green-pale);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 13px;
+    min-height: 56px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .preview-item { display: flex; flex-direction: column; }
+  .preview-item span:first-child { font-size: 11px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; }
+  .preview-item span:last-child { font-weight: 700; color: var(--green-dark); font-family: inherit; font-size: 14px; }
+  .preview-empty { color: var(--gray-500); font-size: 13px; font-style: italic; }
+
+  /* TABEL POHON */
+  .tabel-pohon th { font-size: 11px; }
+  .tabel-pohon td { font-family: inherit; font-size: 13px; }
+  .tabel-pohon td.text-col { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .btn-del { background: none; border: none; color: var(--red); cursor: pointer; font-size: 16px; padding: 3px 7px; border-radius: 6px; transition: background 0.15s; }
+  .btn-del:hover { background: var(--red-pale); }
+
+  /* RINGKASAN */
+  .ringkasan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .summary-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--gray-100); font-size: 14px; }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row .label { color: var(--gray-500); }
+  .summary-row .value { font-weight: 700; font-family: inherit; color: var(--gray-900); }
+  .potongan-box { background: var(--gray-100); border-radius: var(--radius-sm); padding: 16px; }
+  .potongan-box h4 { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--gray-900); }
+  .potongan-input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .potongan-input-row input { flex: 1; padding: 8px 11px; border: 1px solid var(--gray-300); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; }
+  .potongan-input-row span { font-size: 14px; font-weight: 700; color: var(--gray-500); }
+  .potongan-hint { font-size: 11px; color: var(--gray-500); font-style: italic; margin-bottom: 12px; }
+  .total-baris { display: flex; justify-content: space-between; padding: 7px 0; font-size: 13px; }
+  .total-baris.potongan-val { color: var(--red); font-weight: 600; }
+  .total-baris.total-akhir { font-size: 16px; font-weight: 800; color: var(--green-dark); border-top: 2px solid var(--green-pale); margin-top: 8px; padding-top: 12px; }
+  .total-akhir-val { font-family: inherit; font-size: 18px; }
+
+  /* SIMPAN TRANSAKSI */
+  .simpan-bar {
+    margin-top: 20px;
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-300);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .simpan-bar .info { font-size: 13px; color: var(--gray-500); }
+  .simpan-bar .info strong { color: var(--gray-900); }
+  .btn-simpan { background: var(--green-mid); color: white; padding: 11px 28px; font-size: 15px; border-radius: var(--radius-sm); border: none; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 9px; transition: all 0.18s; }
+  .btn-simpan:hover { background: var(--green-dark); transform: translateY(-1px); }
+  .btn-simpan:disabled { background: var(--gray-300); cursor: not-allowed; transform: none; }
+
+  /* KALKULATOR MINI */
+  .calc-display {
+    background: #1a1a2e;
+    color: white;
+    text-align: right;
+    padding: 14px 16px;
+    font-size: 28px;
+    font-family: inherit;
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    min-height: 60px;
+    word-break: break-all;
+    letter-spacing: -0.5px;
+  }
+  .calc-display .calc-expr { font-size: 12px; color: rgba(255,255,255,0.45); display: block; min-height: 18px; margin-bottom: 4px; }
+  .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+  .calc-btn {
+    padding: 13px 4px;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-size: 16px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+    background: var(--gray-100);
+    color: var(--gray-900);
+  }
+  .calc-btn:hover { filter: brightness(0.93); transform: scale(0.97); }
+  .calc-btn.op { background: var(--amber); color: white; }
+  .calc-btn.eq { background: var(--green-mid); color: white; }
+  .calc-btn.clear { background: #e63946; color: white; }
+  .calc-btn.pct { background: #718096; color: white; }
+
+  /* EXPORT CARD */
+  .export-card .card-body { display: flex; flex-direction: column; gap: 10px; }
+  .export-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .export-btn-row .btn { justify-content: center; padding: 11px; font-size: 13px; }
+
+  /* RIWAYAT */
+  .riwayat-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-200);
+    background: var(--gray-100);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .riwayat-item:hover { background: var(--green-xpale); border-color: var(--green-pale); }
+  .riwayat-item .ri-date { color: var(--gray-500); font-size: 12px; }
+  .riwayat-item .ri-total { font-weight: 700; font-family: inherit; color: var(--green-dark); }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .modal { background: white; border-radius: var(--radius); max-width: 420px; width: 100%; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .modal h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .modal p { font-size: 13px; color: var(--gray-500); margin-bottom: 20px; }
+  .modal input { width: 100%; padding: 10px 14px; border: 1px solid var(--gray-300); border-radius: var(--radius-sm); font-size: 14px; margin-bottom: 16px; font-family: 'Plus Jakarta Sans', sans-serif; }
+  .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 28px; right: 28px; background: var(--green-dark); color: white; padding: 12px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; z-index: 9999; box-shadow: var(--shadow-md); transform: translateY(80px); opacity: 0; transition: all 0.3s; pointer-events: none; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+
+  @media (max-width: 1100px) {
+    .two-col { grid-template-columns: 1fr; }
+    .right-col { position: static; }
+  }
+  @media (max-width: 700px) {
+    .stat-grid { grid-template-columns: 1fr; }
+    .ringkasan-grid { grid-template-columns: 1fr; }
+    .input-pohon-row { grid-template-columns: 1fr 1fr; }
+    .acuan-form-row { grid-template-columns: 1fr 1fr; }
+    header { padding: 14px 16px; }
+    .main-wrap { padding: 14px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-icon">🪵</div>
+  <div>
+    <h1>Kalkulator Kayu Pro</h1>
+    <p>Sistem Perhitungan Nilai Penjualan Kayu Profesional</p>
+  </div>
+  <div class="header-right">
+    <span class="header-badge" id="tgl-header"></span>
+  </div>
+</header>
+
+<div class="main-wrap">
+
+  <!-- STAT CARDS -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-icon green">🌲</div>
+      <div>
+        <div class="stat-label">Total Batang</div>
+        <div class="stat-value" id="stat-batang">0</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon amber">📦</div>
+      <div>
+        <div class="stat-label">Total Kubikasi</div>
+        <div class="stat-value" id="stat-kubik">0.00 m³</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon blue">💰</div>
+      <div>
+        <div class="stat-label">Total Nilai</div>
+        <div class="stat-value" id="stat-nilai">Rp 0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="left-col">
+
+      <!-- DATA ACUAN -->
+      <div class="card">
+        <div class="card-header">
+          <h2>📋 Data Acuan Kubikasi Kayu</h2>
+          <div class="btn-group">
+            <button class="btn btn-outline btn-sm" onclick="exportAcuanExcel()">⬇ Export Acuan</button>
+            <button class="btn btn-outline btn-sm" onclick="downloadTemplateAcuan()">📄 Download Template</button>
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('import-acuan').click()">⬆ Import Acuan</button>
+            <input type="file" id="import-acuan" accept=".xlsx,.xls" style="display:none" onchange="importAcuan(event)">
+            <button class="btn btn-danger btn-sm" onclick="clearAcuan()">🗑 Hapus Semua</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Lingkar Min (cm)</th>
+                  <th>Lingkar Max (cm)</th>
+                  <th>Lingkar Tengah (cm)</th>
+                  <th>Kubikasi (m³)</th>
+                  <th>Golongan</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-acuan">
+                <tr><td colspan="6" class="table-empty">Belum ada data acuan. Tambahkan di bawah.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- FORM TAMBAH ACUAN -->
+          <div class="acuan-form-row">
+            <div class="form-group">
+              <label>Lingkar Min</label>
+              <input type="number" id="ac-lmin" placeholder="cth: 20" min="0">
+            </div>
+            <div class="form-group">
+              <label>Lingkar Max</label>
+              <input type="number" id="ac-lmax" placeholder="cth: 40" min="0">
+            </div>
+            <div class="form-group">
+              <label>Lingkar Tengah</label>
+              <input type="number" id="ac-ltengah" placeholder="cth: 30" min="0">
+            </div>
+            <div class="form-group">
+              <label>Kubikasi (m³)</label>
+              <input type="number" id="ac-kubik" placeholder="cth: 0.0700" step="0.0001" min="0">
+            </div>
+            <div class="form-group">
+              <label>Golongan</label>
+              <input type="text" id="ac-gol" placeholder="cth: A1" style="text-transform:uppercase">
+            </div>
+            <div>
+              <label style="font-size:11px;color:transparent;display:block;margin-bottom:5px;">-</label>
+              <button class="btn btn-primary" onclick="tambahAcuan()">+ Tambah</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INPUT POHON -->
+      <div class="card">
+        <div class="card-header">
+          <h2>🌳 Input Data Pohon</h2>
+        </div>
+        <div class="card-body">
+          <div class="input-pohon-row">
+            <div class="form-group">
+              <label>Lingkar Kayu (cm)</label>
+              <input type="number" id="in-lingkar" placeholder="Contoh: 120" min="0" oninput="previewPohon()">
+            </div>
+            <div class="form-group">
+              <label>Jumlah Batang</label>
+              <input type="number" id="in-jumlah" placeholder="1" value="1" min="1" oninput="previewPohon()">
+            </div>
+            <div class="form-group">
+              <label>Harga per Kubik (Rp)</label>
+              <input type="number" id="in-harga" placeholder="Otomatis dari acuan" min="0" oninput="previewPohon()">
+            </div>
+            <div>
+              <label style="font-size:11px;color:transparent;display:block;margin-bottom:5px;">-</label>
+              <button class="btn btn-primary" onclick="tambahPohon()" style="white-space:nowrap">+ Tambah Data Pohon</button>
+            </div>
+          </div>
+
+          <div class="preview-box" id="preview-box">
+            <span class="preview-empty">Masukkan lingkar kayu untuk melihat referensi otomatis.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABEL POHON -->
+      <div class="card">
+        <div class="card-header">
+          <h2>📊 Tabel Perhitungan Pohon</h2>
+          <button class="btn btn-danger btn-sm" onclick="clearPohon()">🗑 Hapus Semua</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="table-wrap">
+            <table class="tabel-pohon">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Lingkar (cm)</th>
+                  <th>Lingkar Tengah</th>
+                  <th>Golongan</th>
+                  <th>Kubikasi/Btg</th>
+                  <th>Jml Btg</th>
+                  <th>Total Kubikasi</th>
+                  <th>Harga/Kubik</th>
+                  <th>Total Nilai</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tbl-pohon">
+                <tr><td colspan="10" class="table-empty">Belum ada data pohon. Tambahkan data di atas.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RINGKASAN -->
+      <div class="card">
+        <div class="card-header">
+          <h2>💵 Ringkasan Total & Potongan</h2>
+        </div>
+        <div class="card-body">
+          <div class="ringkasan-grid">
+            <div>
+              <div class="summary-row"><span class="label">Total Batang</span><span class="value" id="rs-batang">0 Batang</span></div>
+              <div class="summary-row"><span class="label">Total Kubikasi Keseluruhan</span><span class="value" id="rs-kubik">0.00 m³</span></div>
+              <div class="summary-row"><span class="label">Total Nilai Keseluruhan</span><span class="value" id="rs-nilai">Rp 0</span></div>
+            </div>
+            <div class="potongan-box">
+              <h4>✂ Potongan Nilai Kayu</h4>
+              <div class="potongan-input-row">
+                <input type="number" id="pct-input" placeholder="Contoh: 5" min="0" max="100" oninput="hitungPotongan()">
+                <span>%</span>
+              </div>
+              <p class="potongan-hint">Contoh: kayu retak, bengkok, berlubang</p>
+              <div class="total-baris"><span>Total Sebelum Potongan</span><span id="rs-sebelum">Rp 0</span></div>
+              <div class="total-baris potongan-val"><span id="rs-pct-label">Nilai Potongan (0%)</span><span id="rs-potongan">- Rp 0</span></div>
+              <div class="total-baris total-akhir"><span>Total Akhir</span><span class="total-akhir-val" id="rs-akhir">Rp 0</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIMPAN -->
+      <div class="simpan-bar">
+        <div class="info">
+          <strong id="simpan-info">Belum ada data pohon</strong><br>
+          <span>Simpan transaksi ini ke riwayat lokal</span>
+        </div>
+        <button class="btn-simpan" id="btn-simpan" onclick="simpanTransaksi()" disabled>
+          💾 Simpan Transaksi
+        </button>
+      </div>
+
+    </div><!-- /left-col -->
+
+    <div class="right-col">
+
+      <!-- KALKULATOR MINI -->
+      <div class="card">
+        <div class="card-header"><h2>🧮 Kalkulator Mini</h2></div>
+        <div class="card-body">
+          <div class="calc-display">
+            <span class="calc-expr" id="calc-expr"></span>
+            <span id="calc-display">0</span>
+          </div>
+          <div class="calc-grid">
+            <button class="calc-btn clear" onclick="calcAction('C')">C</button>
+            <button class="calc-btn pct"   onclick="calcAction('%')">%</button>
+            <button class="calc-btn op"    onclick="calcAction('/')">÷</button>
+            <button class="calc-btn"       onclick="calcAction('7')">7</button>
+            <button class="calc-btn"       onclick="calcAction('8')">8</button>
+            <button class="calc-btn"       onclick="calcAction('9')">9</button>
+            <button class="calc-btn op"    onclick="calcAction('*')">×</button>
+            <button class="calc-btn"       onclick="calcAction('4')">4</button>
+            <button class="calc-btn"       onclick="calcAction('5')">5</button>
+            <button class="calc-btn"       onclick="calcAction('6')">6</button>
+            <button class="calc-btn op"    onclick="calcAction('-')">−</button>
+            <button class="calc-btn"       onclick="calcAction('1')">1</button>
+            <button class="calc-btn"       onclick="calcAction('2')">2</button>
+            <button class="calc-btn"       onclick="calcAction('3')">3</button>
+            <button class="calc-btn op"    onclick="calcAction('+')">+</button>
+            <button class="calc-btn"       onclick="calcAction('0')" style="grid-column:span 2">0</button>
+            <button class="calc-btn"       onclick="calcAction('.')">.</button>
+            <button class="calc-btn eq"    onclick="calcAction('=')">=</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPORT -->
+      <div class="card export-card">
+        <div class="card-header"><h2>📁 Export Laporan</h2></div>
+        <div class="card-body">
+          <div class="export-btn-row">
+            <button class="btn btn-pdf" onclick="exportPDF()">📄 Export PDF</button>
+            <button class="btn btn-excel" onclick="exportExcel()">📊 Export Excel</button>
+          </div>
+          <p style="font-size:11px;color:var(--gray-500);margin-top:10px;text-align:center">Laporan berisi data pohon lengkap & ringkasan nilai</p>
+        </div>
+      </div>
+
+      <!-- RIWAYAT -->
+      <div class="card">
+        <div class="card-header">
+          <h2>📂 Riwayat Transaksi</h2>
+          <button class="btn btn-danger btn-sm" onclick="clearRiwayat()">Hapus</button>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto" id="riwayat-list">
+          <p style="font-size:13px;color:var(--gray-500);text-align:center">Belum ada riwayat.</p>
+        </div>
+      </div>
+
+    </div><!-- /right-col -->
+  </div>
+</div>
+
+<!-- MODAL NAMA TRANSAKSI -->
+<div class="modal-overlay" id="modal-simpan" style="display:none">
+  <div class="modal">
+    <h3>💾 Simpan Transaksi</h3>
+    <p>Beri nama untuk transaksi ini agar mudah dikenali di riwayat.</p>
+    <input type="text" id="modal-nama" placeholder="Contoh: Jati Blok A - April 2025" maxlength="60">
+    <div class="modal-btns">
+      <button class="btn btn-outline" onclick="document.getElementById('modal-simpan').style.display='none'">Batal</button>
+      <button class="btn btn-primary" onclick="konfirmasiSimpan()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== STATE ====================
+let dataAcuan = JSON.parse(localStorage.getItem('kk_acuan') || '[]');
+let dataPohon = [];
+let riwayat   = JSON.parse(localStorage.getItem('kk_riwayat') || '[]');
+
+// Kalkulator state
+let calcVal = '0', calcExpr = '', calcOp = null, calcPrev = null, calcNewNum = true;
+
+// ==================== INIT ====================
+document.getElementById('tgl-header').textContent = new Date().toLocaleDateString('id-ID', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+renderAcuan();
+renderRiwayat();
+
+// ==================== DATA ACUAN ====================
+function tambahAcuan() {
+  const lmin    = parseFloat(document.getElementById('ac-lmin').value);
+  const lmax    = parseFloat(document.getElementById('ac-lmax').value);
+  const ltengah = parseFloat(document.getElementById('ac-ltengah').value);
+  const kubik   = parseFloat(document.getElementById('ac-kubik').value);
+  const gol     = document.getElementById('ac-gol').value.trim().toUpperCase();
+  if (isNaN(lmin)||isNaN(lmax)||isNaN(ltengah)||isNaN(kubik)||!gol) {
+    showToast('⚠ Lengkapi semua field data acuan!', 'red'); return;
+  }
+  dataAcuan.push({ lmin, lmax, ltengah, kubik, gol });
+  dataAcuan.sort((a,b) => a.lmin - b.lmin);
+  saveAcuan();
+  renderAcuan();
+  ['ac-lmin','ac-lmax','ac-ltengah','ac-kubik','ac-gol'].forEach(id => document.getElementById(id).value = '');
+  showToast('✅ Data acuan berhasil ditambahkan');
+}
+
+function hapusAcuan(i) {
+  dataAcuan.splice(i, 1);
+  saveAcuan();
+  renderAcuan();
+  showToast('🗑 Data acuan dihapus');
+}
+
+function clearAcuan() {
+  if (!confirm('Hapus semua data acuan?')) return;
+  dataAcuan = [];
+  saveAcuan();
+  renderAcuan();
+  showToast('🗑 Semua data acuan dihapus');
+}
+
+function saveAcuan() {
+  localStorage.setItem('kk_acuan', JSON.stringify(dataAcuan));
+}
+
+function renderAcuan() {
+  const tbody = document.getElementById('tbl-acuan');
+  if (!dataAcuan.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="table-empty">Belum ada data acuan. Tambahkan di bawah.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = dataAcuan.map((d,i) => `
+    <tr>
+      <td>${d.lmin}</td>
+      <td>${d.lmax}</td>
+      <td>${d.ltengah}</td>
+      <td>${d.kubik.toFixed(2)}</td>
+      <td><span class="golongan-badge">${d.gol}</span></td>
+      <td><button class="btn-del" onclick="hapusAcuan(${i})" title="Hapus">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+function cariAcuan(lingkar) {
+  return dataAcuan.find(d => lingkar >= d.lmin && lingkar <= d.lmax) || null;
+}
+
+// ==================== INPUT POHON ====================
+function previewPohon() {
+  const lingkar = parseFloat(document.getElementById('in-lingkar').value);
+  const box = document.getElementById('preview-box');
+  if (!lingkar || isNaN(lingkar)) {
+    box.innerHTML = '<span class="preview-empty">Masukkan lingkar kayu untuk melihat referensi otomatis.</span>';
+    return;
+  }
+  const ref = cariAcuan(lingkar);
+  if (!ref) {
+    box.innerHTML = '<span class="preview-empty" style="color:var(--red)">⚠ Tidak ada data acuan untuk lingkar ' + lingkar + ' cm. Pastikan data acuan sudah diinput.</span>';
+    document.getElementById('in-harga').value = '';
+    return;
+  }
+  const jumlah = parseFloat(document.getElementById('in-jumlah').value) || 1;
+  const harga  = parseFloat(document.getElementById('in-harga').value) || 0;
+  const totalK = ref.kubik * jumlah;
+  const totalN = totalK * harga;
+  box.innerHTML = `
+    <div class="preview-item"><span>Golongan</span><span>${ref.gol}</span></div>
+    <div class="preview-item"><span>Lingkar Tengah</span><span>${ref.ltengah} cm</span></div>
+    <div class="preview-item"><span>Kubikasi/Batang</span><span>${ref.kubik.toFixed(2)} m³</span></div>
+    <div class="preview-item"><span>Total Kubikasi</span><span>${totalK.toFixed(2)} m³</span></div>
+    <div class="preview-item"><span>Harga/Kubik</span><span>Rp ${fmtAngka(harga)}</span></div>
+    <div class="preview-item"><span>Total Nilai</span><span style="color:var(--green-dark)">Rp ${fmtAngka(Math.round(totalN))}</span></div>
+  `;
+}
+
+document.getElementById('in-harga').addEventListener('input', previewPohon);
+
+function tambahPohon() {
+  const lingkar = parseFloat(document.getElementById('in-lingkar').value);
+  const jumlah  = parseInt(document.getElementById('in-jumlah').value) || 1;
+  const hargaIn = parseFloat(document.getElementById('in-harga').value);
+
+  if (!lingkar || isNaN(lingkar)) { showToast('⚠ Masukkan lingkar kayu!', 'red'); return; }
+  const ref = cariAcuan(lingkar);
+  if (!ref) { showToast('⚠ Tidak ada data acuan untuk lingkar ' + lingkar + ' cm!', 'red'); return; }
+  const harga   = isNaN(hargaIn) ? 0 : hargaIn;
+  const totalK  = ref.kubik * jumlah;
+  const totalN  = totalK * harga;
+
+  dataPohon.push({
+    lingkar, ltengah: ref.ltengah, gol: ref.gol,
+    kubik: ref.kubik, jumlah, totalKubik: totalK,
+    harga, totalNilai: totalN
+  });
+  renderPohon();
+  updateStats();
+  hitungPotongan();
+
+  document.getElementById('in-lingkar').value = '';
+  document.getElementById('in-jumlah').value  = '1';
+  document.getElementById('in-harga').value   = '';
+  document.getElementById('preview-box').innerHTML = '<span class="preview-empty">Masukkan lingkar kayu untuk melihat referensi otomatis.</span>';
+  showToast('✅ Data pohon ditambahkan');
+}
+
+function hapusPohon(i) {
+  dataPohon.splice(i, 1);
+  renderPohon();
+  updateStats();
+  hitungPotongan();
+}
+
+function clearPohon() {
+  if (!dataPohon.length) return;
+  if (!confirm('Hapus semua data pohon?')) return;
+  dataPohon = [];
+  renderPohon();
+  updateStats();
+  hitungPotongan();
+  showToast('🗑 Data pohon dihapus semua');
+}
+
+function renderPohon() {
+  const tbody = document.getElementById('tbl-pohon');
+  if (!dataPohon.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="table-empty">Belum ada data pohon. Tambahkan data di atas.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = dataPohon.map((d,i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>${d.lingkar}</td>
+      <td>${d.ltengah}</td>
+      <td class="text-col"><span class="golongan-badge">${d.gol}</span></td>
+      <td>${d.kubik.toFixed(2)}</td>
+      <td>${d.jumlah}</td>
+      <td>${d.totalKubik.toFixed(2)}</td>
+      <td>Rp ${fmtAngka(d.harga)}</td>
+      <td>Rp ${fmtAngka(Math.round(d.totalNilai))}</td>
+      <td><button class="btn-del" onclick="hapusPohon(${i})">✕</button></td>
+    </tr>
+  `).join('');
+
+  // TOTAL ROW
+  const totalKubik = dataPohon.reduce((s,d) => s+d.totalKubik, 0);
+  const totalNilai = dataPohon.reduce((s,d) => s+d.totalNilai, 0);
+  const totalBatang = dataPohon.reduce((s,d) => s+d.jumlah, 0);
+  tbody.innerHTML += `
+    <tr style="background:var(--green-xpale);font-weight:700">
+      <td colspan="5" style="text-align:right;font-weight:700;color:var(--green-dark)">TOTAL</td>
+      <td>${totalBatang}</td>
+      <td>${totalKubik.toFixed(2)}</td>
+      <td>—</td>
+      <td>Rp ${fmtAngka(Math.round(totalNilai))}</td>
+      <td></td>
+    </tr>
+  `;
+}
+
+// ==================== STATS & RINGKASAN ====================
+function updateStats() {
+  const totalBatang = dataPohon.reduce((s,d) => s+d.jumlah, 0);
+  const totalKubik  = dataPohon.reduce((s,d) => s+d.totalKubik, 0);
+  const totalNilai  = dataPohon.reduce((s,d) => s+d.totalNilai, 0);
+
+  document.getElementById('stat-batang').textContent = totalBatang;
+  document.getElementById('stat-kubik').textContent  = totalKubik.toFixed(2) + ' m³';
+  document.getElementById('stat-nilai').textContent  = 'Rp ' + fmtAngka(Math.round(totalNilai));
+  document.getElementById('rs-batang').textContent   = totalBatang + ' Batang';
+  document.getElementById('rs-kubik').textContent    = totalKubik.toFixed(2) + ' m³';
+  document.getElementById('rs-nilai').textContent    = 'Rp ' + fmtAngka(Math.round(totalNilai));
+
+  const simpanInfo = document.getElementById('simpan-info');
+  const btnSimpan  = document.getElementById('btn-simpan');
+  if (dataPohon.length) {
+    simpanInfo.textContent = totalBatang + ' batang | ' + totalKubik.toFixed(2) + ' m³ | Rp ' + fmtAngka(Math.round(totalNilai));
+    btnSimpan.disabled = false;
+  } else {
+    simpanInfo.textContent = 'Belum ada data pohon';
+    btnSimpan.disabled = true;
+  }
+  hitungPotongan();
+}
+
+function hitungPotongan() {
+  const totalNilai = dataPohon.reduce((s,d) => s+d.totalNilai, 0);
+  const pct = parseFloat(document.getElementById('pct-input').value) || 0;
+  const pot = totalNilai * (pct / 100);
+  const akhir = totalNilai - pot;
+
+  document.getElementById('rs-sebelum').textContent    = 'Rp ' + fmtAngka(Math.round(totalNilai));
+  document.getElementById('rs-pct-label').textContent  = 'Nilai Potongan (' + pct + '%)';
+  document.getElementById('rs-potongan').textContent   = '- Rp ' + fmtAngka(Math.round(pot));
+  document.getElementById('rs-akhir').textContent      = 'Rp ' + fmtAngka(Math.round(akhir));
+}
+
+// ==================== SIMPAN TRANSAKSI ====================
+function simpanTransaksi() {
+  document.getElementById('modal-nama').value = '';
+  document.getElementById('modal-simpan').style.display = 'flex';
+  setTimeout(() => document.getElementById('modal-nama').focus(), 100);
+}
+
+function konfirmasiSimpan() {
+  const nama = document.getElementById('modal-nama').value.trim() || ('Transaksi ' + new Date().toLocaleDateString('id-ID'));
+  const totalBatang = dataPohon.reduce((s,d) => s+d.jumlah, 0);
+  const totalKubik  = dataPohon.reduce((s,d) => s+d.totalKubik, 0);
+  const totalNilai  = dataPohon.reduce((s,d) => s+d.totalNilai, 0);
+  const pct    = parseFloat(document.getElementById('pct-input').value) || 0;
+  const akhir  = totalNilai * (1 - pct/100);
+
+  riwayat.unshift({
+    nama, tanggal: new Date().toISOString(),
+    totalBatang, totalKubik, totalNilai, pct, akhir,
+    pohon: JSON.parse(JSON.stringify(dataPohon))
+  });
+  if (riwayat.length > 30) riwayat.pop();
+  localStorage.setItem('kk_riwayat', JSON.stringify(riwayat));
+  renderRiwayat();
+  document.getElementById('modal-simpan').style.display = 'none';
+  showToast('✅ Transaksi "' + nama + '" disimpan!');
+}
+
+function renderRiwayat() {
+  const el = document.getElementById('riwayat-list');
+  if (!riwayat.length) {
+    el.innerHTML = '<p style="font-size:13px;color:var(--gray-500);text-align:center">Belum ada riwayat.</p>';
+    return;
+  }
+  el.innerHTML = riwayat.map((r,i) => `
+    <div class="riwayat-item" onclick="muatRiwayat(${i})">
+      <div>
+        <div style="font-weight:600">${r.nama}</div>
+        <div class="ri-date">${new Date(r.tanggal).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})} · ${r.totalBatang} batang</div>
+      </div>
+      <div class="ri-total">Rp ${fmtAngka(Math.round(r.akhir))}</div>
+    </div>
+  `).join('');
+}
+
+function muatRiwayat(i) {
+  if (!confirm('Muat data transaksi ini? Data pohon saat ini akan tergantikan.')) return;
+  dataPohon = JSON.parse(JSON.stringify(riwayat[i].pohon));
+  renderPohon();
+  updateStats();
+  document.getElementById('pct-input').value = riwayat[i].pct || 0;
+  hitungPotongan();
+  showToast('📂 Transaksi "' + riwayat[i].nama + '" dimuat');
+}
+
+function clearRiwayat() {
+  if (!riwayat.length) return;
+  if (!confirm('Hapus semua riwayat transaksi?')) return;
+  riwayat = [];
+  localStorage.setItem('kk_riwayat', '[]');
+  renderRiwayat();
+  showToast('🗑 Riwayat dihapus');
+}
+
+// ==================== EXPORT ACUAN ====================
+function exportAcuanExcel() {
+  if (!dataAcuan.length) { showToast('⚠ Tidak ada data acuan!', 'red'); return; }
+  const ws = XLSX.utils.json_to_sheet(dataAcuan.map(d => ({
+    'Lingkar Min (cm)': d.lmin, 'Lingkar Max (cm)': d.lmax,
+    'Lingkar Tengah (cm)': d.ltengah, 'Kubikasi (m³)': d.kubik,
+    'Golongan': d.gol
+  })));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Data Acuan');
+  XLSX.writeFile(wb, 'data_acuan_kayu.xlsx');
+  showToast('✅ Data acuan diekspor');
+}
+
+function importAcuan(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+
+      // Baca semua baris sebagai array mentah
+      const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+      // Cari baris header secara dinamis (tidak peduli berapa banyak baris petunjuk di atas)
+      const KEYWORDS = ['lingkar min', 'lingkar max', 'kubikasi', 'golongan', 'harga'];
+      let headerRowIdx = -1;
+      for (let i = 0; i < raw.length; i++) {
+        const rowStr = raw[i].join('|').toLowerCase();
+        const matchCount = KEYWORDS.filter(k => rowStr.includes(k)).length;
+        if (matchCount >= 3) { headerRowIdx = i; break; }
+      }
+
+      if (headerRowIdx === -1) {
+        showToast('⚠ Format file tidak dikenali. Gunakan template yang disediakan.', 'red');
+        return;
+      }
+
+      // Buat mapping nama kolom ke index
+      const headers = raw[headerRowIdx].map(h => h.toString().toLowerCase().trim());
+      const colIdx = key => headers.findIndex(h => h.includes(key));
+
+      const iLmin    = colIdx('lingkar min');
+      const iLmax    = colIdx('lingkar max');
+      const iLtengah = colIdx('lingkar tengah');
+      const iKubik   = colIdx('kubikasi');
+      const iGol     = colIdx('golongan');
+      const iHarga   = colIdx('harga');
+
+      if ([iLmin, iLmax, iLtengah, iKubik, iGol, iHarga].includes(-1)) {
+        showToast('⚠ Kolom wajib tidak lengkap. Periksa template.', 'red');
+        return;
+      }
+
+      let added = 0;
+      // Proses baris data, mulai setelah header + 1 baris hint
+      for (let i = headerRowIdx + 2; i < raw.length; i++) {
+        const row = raw[i];
+        const lminRaw = row[iLmin];
+        // Skip baris kosong atau bukan angka
+        if (lminRaw === '' || lminRaw === null || isNaN(parseFloat(lminRaw))) continue;
+
+        const lmin    = parseFloat(row[iLmin]);
+        const lmax    = parseFloat(row[iLmax]);
+        const ltengah = parseFloat(row[iLtengah]);
+        const kubik   = parseFloat(row[iKubik]);
+        const gol     = (row[iGol] || '').toString().trim().toUpperCase();
+        const harga   = parseFloat((row[iHarga] || '').toString().replace(/[^0-9.]/g, ''));
+
+        if (!isNaN(lmin) && !isNaN(lmax) && !isNaN(ltengah) && !isNaN(kubik) && gol && !isNaN(harga) && harga > 0) {
+          dataAcuan.push({ lmin, lmax, ltengah, kubik, gol });
+          added++;
+        }
+      }
+
+      if (added === 0) {
+        showToast('⚠ Tidak ada data valid ditemukan. Pastikan data diisi mulai baris ke-3 setelah header.', 'red');
+        return;
+      }
+
+      dataAcuan.sort((a, b) => a.lmin - b.lmin);
+      saveAcuan();
+      renderAcuan();
+      showToast('✅ ' + added + ' data acuan berhasil diimpor!');
+    } catch (err) {
+      showToast('⚠ Gagal membaca file: ' + err.message, 'red');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  event.target.value = '';
+}
+
+// ==================== EXPORT LAPORAN ====================
+function exportExcel() {
+  if (!dataPohon.length) { showToast('⚠ Tidak ada data pohon!', 'red'); return; }
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: Data Pohon
+  const rows = dataPohon.map((d,i) => ({
+    'No': i+1, 'Lingkar (cm)': d.lingkar, 'Lingkar Tengah (cm)': d.ltengah,
+    'Golongan': d.gol, 'Kubikasi/Batang (m³)': d.kubik,
+    'Jumlah Batang': d.jumlah, 'Total Kubikasi (m³)': +d.totalKubik.toFixed(2),
+    'Harga/Kubik (Rp)': d.harga, 'Total Nilai (Rp)': Math.round(d.totalNilai)
+  }));
+  const ws1 = XLSX.utils.json_to_sheet(rows);
+  ws1['!cols'] = [4,12,16,10,18,13,18,16,16].map(w => ({wch:w}));
+  XLSX.utils.book_append_sheet(wb, ws1, 'Data Pohon');
+
+  // Sheet 2: Ringkasan
+  const pct = parseFloat(document.getElementById('pct-input').value) || 0;
+  const totalNilai = dataPohon.reduce((s,d) => s+d.totalNilai, 0);
+  const akhir = totalNilai * (1 - pct/100);
+  const ws2 = XLSX.utils.aoa_to_sheet([
+    ['RINGKASAN PERHITUNGAN KAYU'],
+    ['Tanggal', new Date().toLocaleDateString('id-ID')],
+    [''],
+    ['Total Batang', dataPohon.reduce((s,d)=>s+d.jumlah,0), 'batang'],
+    ['Total Kubikasi', +dataPohon.reduce((s,d)=>s+d.totalKubik,0).toFixed(2), 'm³'],
+    ['Total Nilai Kotor', Math.round(totalNilai), 'Rp'],
+    ['Potongan', pct, '%'],
+    ['Nilai Potongan', Math.round(totalNilai*pct/100), 'Rp'],
+    ['TOTAL AKHIR', Math.round(akhir), 'Rp'],
+  ]);
+  ws2['!cols'] = [{wch:22},{wch:18},{wch:8}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Ringkasan');
+
+  XLSX.writeFile(wb, 'laporan_kayu_' + new Date().toISOString().slice(0,10) + '.xlsx');
+  showToast('✅ Laporan Excel berhasil diunduh');
+}
+
+function exportPDF() {
+  if (!dataPohon.length) { showToast('⚠ Tidak ada data pohon!', 'red'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+  const pct = parseFloat(document.getElementById('pct-input').value) || 0;
+  const totalNilai = dataPohon.reduce((s,d) => s+d.totalNilai, 0);
+  const totalKubik = dataPohon.reduce((s,d) => s+d.totalKubik, 0);
+  const totalBatang = dataPohon.reduce((s,d) => s+d.jumlah, 0);
+  const pot  = totalNilai * (pct/100);
+  const akhir = totalNilai - pot;
+  const tgl  = new Date().toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'});
+
+  // Header
+  doc.setFillColor(26, 71, 49);
+  doc.rect(0, 0, 297, 22, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(15); doc.setFont('helvetica', 'bold');
+  doc.text('KALKULATOR KAYU PRO', 14, 10);
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+  doc.text('Sistem Perhitungan Nilai Penjualan Kayu Profesional', 14, 16);
+  doc.text('Tanggal: ' + tgl, 260, 10, { align: 'right' });
+
+  // Summary bar
+  doc.setFillColor(240, 250, 242);
+  doc.rect(0, 23, 297, 14, 'F');
+  doc.setTextColor(26, 71, 49); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+  doc.text('Total Batang: ' + totalBatang, 14, 32);
+  doc.text('Total Kubikasi: ' + totalKubik.toFixed(2) + ' m³', 80, 32);
+  doc.text('Total Nilai: Rp ' + fmtAngka(Math.round(totalNilai)), 160, 32);
+  doc.text('Total Akhir: Rp ' + fmtAngka(Math.round(akhir)), 230, 32);
+
+  // Table
+  doc.autoTable({
+    startY: 40,
+    head: [['No','Lingkar (cm)','Lingkar Tengah','Golongan','Kubikasi/Btg','Jml Batang','Total Kubikasi','Harga/Kubik (Rp)','Total Nilai (Rp)']],
+    body: dataPohon.map((d,i) => [
+      i+1, d.lingkar, d.ltengah, d.gol,
+      d.kubik.toFixed(2), d.jumlah, d.totalKubik.toFixed(2),
+      fmtAngka(d.harga), fmtAngka(Math.round(d.totalNilai))
+    ]),
+    foot: [['','','','','',totalBatang,totalKubik.toFixed(2),'TOTAL',fmtAngka(Math.round(totalNilai))]],
+    headStyles: { fillColor: [26,71,49], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+    footStyles: { fillColor: [216,243,220], textColor: [26,71,49], fontStyle: 'bold', fontSize: 9 },
+    bodyStyles: { fontSize: 9 },
+    alternateRowStyles: { fillColor: [248, 252, 248] },
+    margin: { left: 14, right: 14 },
+    styles: { cellPadding: 2.5 }
+  });
+
+  let y = doc.lastAutoTable.finalY + 8;
+  // Ringkasan potongan
+  doc.setFillColor(248, 252, 248);
+  doc.roundedRect(180, y, 103, 34, 3, 3, 'F');
+  doc.setDrawColor(200, 230, 210);
+  doc.roundedRect(180, y, 103, 34, 3, 3, 'S');
+  doc.setTextColor(80, 80, 80); doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+  doc.text('Total Sebelum Potongan:', 184, y+8);
+  doc.text('Rp ' + fmtAngka(Math.round(totalNilai)), 279, y+8, { align: 'right' });
+  doc.setTextColor(200, 50, 50);
+  doc.text('Potongan (' + pct + '%):', 184, y+16);
+  doc.text('- Rp ' + fmtAngka(Math.round(pot)), 279, y+16, { align: 'right' });
+  doc.setDrawColor(200, 230, 210); doc.line(184, y+20, 279, y+20);
+  doc.setTextColor(26, 71, 49); doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+  doc.text('TOTAL AKHIR:', 184, y+28);
+  doc.text('Rp ' + fmtAngka(Math.round(akhir)), 279, y+28, { align: 'right' });
+
+  doc.save('laporan_kayu_' + new Date().toISOString().slice(0,10) + '.pdf');
+  showToast('✅ Laporan PDF berhasil diunduh');
+}
+
+// ==================== KALKULATOR ====================
+function calcAction(key) {
+  const disp = document.getElementById('calc-display');
+  const expr = document.getElementById('calc-expr');
+
+  if (key === 'C') {
+    calcVal = '0'; calcExpr = ''; calcOp = null; calcPrev = null; calcNewNum = true;
+  } else if (key === '%') {
+    calcVal = String(parseFloat(calcVal) / 100);
+  } else if (['+','-','*','/'].includes(key)) {
+    calcPrev = parseFloat(calcVal);
+    calcOp = key;
+    calcExpr = calcVal + ' ' + ({'+':'+','-':'−','*':'×','/':'÷'}[key]);
+    calcNewNum = true;
+  } else if (key === '=') {
+    if (calcOp && calcPrev !== null) {
+      const cur = parseFloat(calcVal);
+      let res;
+      if (calcOp==='+') res = calcPrev+cur;
+      else if (calcOp==='-') res = calcPrev-cur;
+      else if (calcOp==='*') res = calcPrev*cur;
+      else if (calcOp==='/') res = cur===0 ? 'Error' : calcPrev/cur;
+      calcExpr = '';
+      calcVal = isNaN(res) ? 'Error' : (Math.round(res * 1e10) / 1e10).toString();
+      calcOp = null; calcPrev = null; calcNewNum = true;
+    }
+  } else if (key === '.') {
+    if (calcNewNum) { calcVal = '0.'; calcNewNum = false; }
+    else if (!calcVal.includes('.')) calcVal += '.';
+  } else {
+    if (calcNewNum || calcVal === '0') { calcVal = key; calcNewNum = false; }
+    else if (calcVal.length < 16) calcVal += key;
+  }
+
+  disp.textContent = calcVal.length > 14 ? parseFloat(calcVal).toExponential(4) : calcVal;
+  expr.textContent = calcExpr;
+}
+
+// ==================== UTILS ====================
+function fmtAngka(n) {
+  return n.toLocaleString('id-ID');
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = type === 'red' ? 'var(--red)' : 'var(--green-dark)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+
+// ==================== DOWNLOAD TEMPLATE ACUAN ====================
+function downloadTemplateAcuan() {
+  const wb = XLSX.utils.book_new();
+
+  // Buat sheet dengan header + contoh data
+  const aoa = [
+    // Baris 1: Judul
+    ['TEMPLATE DATA ACUAN KUBIKASI KAYU - Kalkulator Kayu Pro'],
+    ['Isi data mulai baris ke-4. Jangan ubah nama kolom di baris ke-3.'],
+    // Baris 3: Header kolom
+    ['Lingkar Min (cm)', 'Lingkar Max (cm)', 'Lingkar Tengah (cm)', 'Kubikasi (m³)', 'Golongan', 'Keterangan (opsional)'],
+    // Baris 4-8: Contoh data
+    [20, 39, 30, 0.0500, 'A', 'Kayu kecil'],
+    [40, 59, 50, 0.0900, 'B', 'Kayu sedang'],
+    [60, 79, 70, 0.1400, 'C', 'Kayu besar'],
+    [80, 99, 90, 0.2000, 'D', 'Kayu sangat besar'],
+    [100, 119, 110, 0.2700, 'E', 'Kayu jumbo'],
+    // Baris kosong untuk diisi
+    [], [], [], [], [], [], [], [], [], [],
+    [], [], [], [], [], [], [], [], [], [],
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+  // Set lebar kolom
+  ws['!cols'] = [
+    {wch: 18}, {wch: 18}, {wch: 20}, {wch: 18}, {wch: 12}, {wch: 24}
+  ];
+
+  // Merge judul
+  ws['!merges'] = [
+    { s: {r:0, c:0}, e: {r:0, c:5} },
+    { s: {r:1, c:0}, e: {r:1, c:5} },
+  ];
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Data Acuan');
+  XLSX.writeFile(wb, 'template_data_acuan_kayu.xlsx');
+  showToast('✅ Template berhasil diunduh!');
+}
+
+// Keyboard support untuk kalkulator — hanya aktif jika fokus BUKAN di input/textarea/select
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (['0','1','2','3','4','5','6','7','8','9','.'].includes(e.key)) calcAction(e.key);
+  else if (e.key === '+') calcAction('+');
+  else if (e.key === '-') calcAction('-');
+  else if (e.key === '*') calcAction('*');
+  else if (e.key === '/') { e.preventDefault(); calcAction('/'); }
+  else if (e.key === 'Enter' || e.key === '=') calcAction('=');
+  else if (e.key === 'Escape') calcAction('C');
+  else if (e.key === '%') calcAction('%');
+});
+
+// Close modal on overlay click
+document.getElementById('modal-simpan').addEventListener('click', function(e) {
+  if (e.target === this) this.style.display = 'none';
+});
+document.getElementById('modal-nama').addEventListener('keydown', e => {
+  if (e.key === 'Enter') konfirmasiSimpan();
+});
+</script>
+</body>
+</html>
