@@ -267,15 +267,21 @@
     font-size: 28px;
     font-family: inherit;
     border-radius: var(--radius-sm);
-    margin-bottom: 12px;
-    min-height: 60px;
+    margin-bottom: 10px;
+    min-height: 70px;
     word-break: break-all;
     letter-spacing: -0.5px;
+    display: flex; flex-direction: column; justify-content: flex-end;
   }
-  .calc-display .calc-expr { font-size: 12px; color: rgba(255,255,255,0.45); display: block; min-height: 18px; margin-bottom: 4px; }
-  .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+  .calc-display .calc-expr { font-size: 12px; color: rgba(255,255,255,0.45); min-height: 16px; margin-bottom: 2px; text-align: right; }
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 8px;
+  }
   .calc-btn {
-    padding: 13px 4px;
+    padding: 14px 4px;
     border-radius: var(--radius-sm);
     border: none;
     font-size: 16px;
@@ -287,10 +293,12 @@
     color: var(--gray-900);
   }
   .calc-btn:hover { filter: brightness(0.93); transform: scale(0.97); }
-  .calc-btn.op { background: var(--amber); color: white; }
-  .calc-btn.eq { background: var(--green-mid); color: white; }
+  .calc-btn:active { transform: scale(0.94); }
+  .calc-btn.op { background: #f4a261; color: white; }
+  .calc-btn.eq { background: var(--green-mid); color: white; font-size: 20px; }
   .calc-btn.clear { background: #e63946; color: white; }
   .calc-btn.pct { background: #718096; color: white; }
+  .calc-btn.span2 { grid-column: span 2; }
 
   /* EXPORT CARD */
   .export-card .card-body { display: flex; flex-direction: column; gap: 10px; }
@@ -564,21 +572,21 @@
             <button class="calc-btn clear" onclick="calcAction('C')">C</button>
             <button class="calc-btn pct"   onclick="calcAction('%')">%</button>
             <button class="calc-btn op"    onclick="calcAction('/')">÷</button>
+            <button class="calc-btn op"    onclick="calcAction('*')">×</button>
             <button class="calc-btn"       onclick="calcAction('7')">7</button>
             <button class="calc-btn"       onclick="calcAction('8')">8</button>
             <button class="calc-btn"       onclick="calcAction('9')">9</button>
-            <button class="calc-btn op"    onclick="calcAction('*')">×</button>
+            <button class="calc-btn op"    onclick="calcAction('-')">−</button>
             <button class="calc-btn"       onclick="calcAction('4')">4</button>
             <button class="calc-btn"       onclick="calcAction('5')">5</button>
             <button class="calc-btn"       onclick="calcAction('6')">6</button>
-            <button class="calc-btn op"    onclick="calcAction('-')">−</button>
+            <button class="calc-btn op"    onclick="calcAction('+')">+</button>
             <button class="calc-btn"       onclick="calcAction('1')">1</button>
             <button class="calc-btn"       onclick="calcAction('2')">2</button>
             <button class="calc-btn"       onclick="calcAction('3')">3</button>
-            <button class="calc-btn op"    onclick="calcAction('+')">+</button>
-            <button class="calc-btn"       onclick="calcAction('0')" style="grid-column:span 2">0</button>
+            <button class="calc-btn eq"    onclick="calcAction('=')" style="grid-row: span 2">=</button>
+            <button class="calc-btn span2" onclick="calcAction('0')">0</button>
             <button class="calc-btn"       onclick="calcAction('.')">.</button>
-            <button class="calc-btn eq"    onclick="calcAction('=')">=</button>
           </div>
         </div>
       </div>
