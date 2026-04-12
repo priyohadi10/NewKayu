@@ -328,6 +328,38 @@
   .modal input { width: 100%; padding: 10px 14px; border: 1px solid var(--gray-300); border-radius: var(--radius-sm); font-size: 14px; margin-bottom: 16px; font-family: 'Plus Jakarta Sans', sans-serif; }
   .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
 
+
+  /* PRESET DATA ACUAN */
+  .preset-bar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: var(--green-xpale);
+    border: 1px dashed var(--green-light);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .preset-bar-label { font-size: 12px; font-weight: 700; color: var(--green-dark); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }
+  .preset-chips { display: flex; gap: 7px; flex-wrap: wrap; flex: 1; }
+  .preset-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1.5px solid var(--green-light);
+    background: white; color: var(--green-dark);
+    transition: all 0.15s;
+  }
+  .preset-chip:hover { background: var(--green-pale); border-color: var(--green-dark); }
+  .preset-chip.active { background: var(--green-mid); color: white; border-color: var(--green-mid); }
+  .preset-chip .chip-del { opacity: 0.6; font-size: 11px; margin-left: 2px; }
+  .preset-chip .chip-del:hover { opacity: 1; }
+  .preset-chip.builtin { border-style: solid; }
+  .btn-save-preset { background: var(--green-mid); color: white; border: none; padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+  .btn-save-preset:hover { background: var(--green-dark); }
+
+  /* MODAL PRESET */
+  .modal-preset { max-width: 380px; }
+
   /* TOAST */
   .toast { position: fixed; bottom: 28px; right: 28px; background: var(--green-dark); color: white; padding: 12px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; z-index: 9999; box-shadow: var(--shadow-md); transform: translateY(80px); opacity: 0; transition: all 0.3s; pointer-events: none; }
   .toast.show { transform: translateY(0); opacity: 1; }
@@ -408,6 +440,13 @@
           </div>
         </div>
         <div class="card-body">
+          <!-- PRESET DATA ACUAN -->
+          <div class="preset-bar">
+            <span class="preset-bar-label">🗂 Preset:</span>
+            <div class="preset-chips" id="preset-chips"></div>
+            <button class="btn-save-preset" onclick="bukaSimpanPreset()">+ Simpan Preset</button>
+          </div>
+
           <div class="table-wrap">
             <table>
               <thead>
@@ -618,6 +657,20 @@
   </div>
 </div>
 
+
+<!-- MODAL SIMPAN PRESET -->
+<div class="modal-overlay" id="modal-preset" style="display:none">
+  <div class="modal modal-preset">
+    <h3>💾 Simpan sebagai Preset</h3>
+    <p>Beri nama untuk dataset acuan yang sedang aktif agar bisa dipanggil kembali kapan saja.</p>
+    <input type="text" id="modal-preset-nama" placeholder="Contoh: Jati Blok A, Gamelina 2025..." maxlength="40">
+    <div class="modal-btns">
+      <button class="btn btn-outline" onclick="document.getElementById('modal-preset').style.display='none'">Batal</button>
+      <button class="btn btn-primary" onclick="konfirmasiSimpanPreset()">Simpan Preset</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL NAMA TRANSAKSI -->
 <div class="modal-overlay" id="modal-simpan" style="display:none">
   <div class="modal">
@@ -647,6 +700,89 @@ let calcVal = '0', calcExpr = '', calcOp = null, calcPrev = null, calcNewNum = t
 document.getElementById('tgl-header').textContent = new Date().toLocaleDateString('id-ID', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
 renderAcuan();
 renderRiwayat();
+renderPresetChips();
+
+
+// ==================== PRESET DATA ACUAN ====================
+const BUILTIN_PRESETS = [
+  { id: 'gamelina', nama: 'Gamelina', builtin: true, data: [{lmin:70,lmax:70,ltengah:22,kubik:0.38,gol:'A3'},{lmin:72,lmax:72,ltengah:22.9,kubik:0.41,gol:'A3'},{lmin:73,lmax:73,ltengah:23,kubik:0.41,gol:'A3'},{lmin:74,lmax:74,ltengah:23.5,kubik:0.43,gol:'A3'},{lmin:75,lmax:75,ltengah:24,kubik:0.45,gol:'A3'},{lmin:78,lmax:78,ltengah:25,kubik:0.49,gol:'A3'},{lmin:80,lmax:80,ltengah:25.4,kubik:0.51,gol:'A3'},{lmin:84,lmax:84,ltengah:26.7,kubik:0.55,gol:'A3'},{lmin:85,lmax:85,ltengah:27,kubik:0.57,gol:'A3'},{lmin:90,lmax:90,ltengah:28.6,kubik:0.64,gol:'A3'},{lmin:95,lmax:95,ltengah:30,kubik:0.7,gol:'A4'},{lmin:100,lmax:100,ltengah:31.8,kubik:0.79,gol:'A4'},{lmin:103,lmax:103,ltengah:32.8,kubik:0.84,gol:'A4'},{lmin:110,lmax:110,ltengah:35,kubik:0.96,gol:'A4'},{lmin:115,lmax:115,ltengah:36.6,kubik:0.96,gol:'A4'},{lmin:120,lmax:120,ltengah:38,kubik:1.13,gol:'A4'},{lmin:125,lmax:125,ltengah:39.8,kubik:1.24,gol:'A4'},{lmin:130,lmax:130,ltengah:41.4,kubik:1.35,gol:'A5'},{lmin:140,lmax:140,ltengah:44.5,kubik:1.55,gol:'A5'},{lmin:150,lmax:150,ltengah:47.77,kubik:1.79,gol:'A5'},{lmin:160,lmax:160,ltengah:53.3,kubik:2.03,gol:'A5'}] },
+  { id: 'jati',     nama: 'Jati',     builtin: true, data: [{lmin:70,lmax:70,ltengah:22,kubik:0.38,gol:'A2'},{lmin:72,lmax:72,ltengah:22.9,kubik:0.41,gol:'A2'},{lmin:73,lmax:73,ltengah:23,kubik:0.41,gol:'A2'},{lmin:74,lmax:74,ltengah:23.5,kubik:0.43,gol:'A2'},{lmin:75,lmax:75,ltengah:24,kubik:0.45,gol:'A2'},{lmin:78,lmax:78,ltengah:25,kubik:0.49,gol:'A2'},{lmin:80,lmax:80,ltengah:25.4,kubik:0.51,gol:'A2'},{lmin:84,lmax:84,ltengah:26.7,kubik:0.55,gol:'A2'},{lmin:85,lmax:85,ltengah:27,kubik:0.57,gol:'A2'},{lmin:90,lmax:90,ltengah:28.6,kubik:0.64,gol:'A2'},{lmin:95,lmax:95,ltengah:30,kubik:0.7,gol:'A3'},{lmin:100,lmax:100,ltengah:31.8,kubik:0.79,gol:'A3'},{lmin:103,lmax:103,ltengah:32.8,kubik:0.84,gol:'A3'},{lmin:110,lmax:110,ltengah:35,kubik:0.96,gol:'A3'},{lmin:115,lmax:115,ltengah:36.6,kubik:0.96,gol:'A3'},{lmin:120,lmax:120,ltengah:38,kubik:1.13,gol:'A3'},{lmin:125,lmax:125,ltengah:39.8,kubik:1.24,gol:'A3'},{lmin:130,lmax:130,ltengah:41.4,kubik:1.35,gol:'A3'},{lmin:140,lmax:140,ltengah:44.5,kubik:1.55,gol:'A3'},{lmin:150,lmax:150,ltengah:47.77,kubik:1.79,gol:'A3'},{lmin:160,lmax:160,ltengah:53.3,kubik:2.03,gol:'A3'}] },
+];
+
+let presetList = JSON.parse(localStorage.getItem('kk_presets') || '[]');
+let activePresetId = null;
+
+function savePresets() {
+  localStorage.setItem('kk_presets', JSON.stringify(presetList));
+}
+
+function getAllPresets() {
+  return [...BUILTIN_PRESETS, ...presetList];
+}
+
+function renderPresetChips() {
+  const wrap = document.getElementById('preset-chips');
+  const all = getAllPresets();
+  if (!all.length) { wrap.innerHTML = '<span style="font-size:12px;color:var(--gray-500)">Belum ada preset tersimpan.</span>'; return; }
+  wrap.innerHTML = all.map(p => {
+    const isActive = p.id === activePresetId;
+    const delBtn = p.builtin ? '' : `<span class="chip-del" onclick="hapusPreset(event,'${p.id}')" title="Hapus">✕</span>`;
+    return `<span class="preset-chip ${isActive?'active':''} ${p.builtin?'builtin':''}" onclick="pakaiPreset('${p.id}')">${p.nama}${delBtn}</span>`;
+  }).join('');
+}
+
+function pakaiPreset(id) {
+  const all = getAllPresets();
+  const preset = all.find(p => p.id === id);
+  if (!preset) return;
+  if (activePresetId === id) {
+    // Toggle off — kosongkan
+    if (!confirm('Nonaktifkan preset dan hapus data acuan yang sedang aktif?')) return;
+    dataAcuan = [];
+    activePresetId = null;
+  } else {
+    if (dataAcuan.length && activePresetId !== id) {
+      if (!confirm('Mengganti preset akan mengganti data acuan saat ini. Lanjutkan?')) return;
+    }
+    dataAcuan = JSON.parse(JSON.stringify(preset.data));
+    activePresetId = id;
+    showToast('✅ Preset "' + preset.nama + '" diaktifkan (' + preset.data.length + ' data)');
+  }
+  saveAcuan();
+  renderAcuan();
+  renderPresetChips();
+}
+
+function hapusPreset(e, id) {
+  e.stopPropagation();
+  const p = presetList.find(x => x.id === id);
+  if (!p) return;
+  if (!confirm('Hapus preset "' + p.nama + '"?')) return;
+  presetList = presetList.filter(x => x.id !== id);
+  if (activePresetId === id) activePresetId = null;
+  savePresets();
+  renderPresetChips();
+  showToast('🗑 Preset dihapus');
+}
+
+function bukaSimpanPreset() {
+  if (!dataAcuan.length) { showToast('⚠ Tidak ada data acuan untuk disimpan!', 'red'); return; }
+  document.getElementById('modal-preset-nama').value = '';
+  document.getElementById('modal-preset').style.display = 'flex';
+  setTimeout(() => document.getElementById('modal-preset-nama').focus(), 100);
+}
+
+function konfirmasiSimpanPreset() {
+  const nama = document.getElementById('modal-preset-nama').value.trim();
+  if (!nama) { showToast('⚠ Masukkan nama preset!', 'red'); return; }
+  const id = 'preset_' + Date.now();
+  presetList.push({ id, nama, builtin: false, data: JSON.parse(JSON.stringify(dataAcuan)) });
+  activePresetId = id;
+  savePresets();
+  renderPresetChips();
+  document.getElementById('modal-preset').style.display = 'none';
+  showToast('✅ Preset "' + nama + '" berhasil disimpan!');
+}
 
 // ==================== DATA ACUAN ====================
 function tambahAcuan() {
@@ -1230,6 +1366,12 @@ document.getElementById('modal-simpan').addEventListener('click', function(e) {
 });
 document.getElementById('modal-nama').addEventListener('keydown', e => {
   if (e.key === 'Enter') konfirmasiSimpan();
+});
+document.getElementById('modal-preset').addEventListener('click', function(e) {
+  if (e.target === this) this.style.display = 'none';
+});
+document.getElementById('modal-preset-nama').addEventListener('keydown', e => {
+  if (e.key === 'Enter') konfirmasiSimpanPreset();
 });
 </script>
 </body>
