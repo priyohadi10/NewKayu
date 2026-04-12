@@ -946,7 +946,7 @@ function importAcuan(event) {
       const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
 
       // Cari baris header secara dinamis (tidak peduli berapa banyak baris petunjuk di atas)
-      const KEYWORDS = ['lingkar min', 'lingkar max', 'kubikasi', 'golongan', 'harga'];
+      const KEYWORDS = ['lingkar min', 'lingkar max', 'kubikasi', 'golongan'];
       let headerRowIdx = -1;
       for (let i = 0; i < raw.length; i++) {
         const rowStr = raw[i].join('|').toLowerCase();
@@ -968,16 +968,14 @@ function importAcuan(event) {
       const iLtengah = colIdx('lingkar tengah');
       const iKubik   = colIdx('kubikasi');
       const iGol     = colIdx('golongan');
-      const iHarga   = colIdx('harga');
-
-      if ([iLmin, iLmax, iLtengah, iKubik, iGol, iHarga].includes(-1)) {
+      if ([iLmin, iLmax, iLtengah, iKubik, iGol].includes(-1)) {
         showToast('⚠ Kolom wajib tidak lengkap. Periksa template.', 'red');
         return;
       }
 
       let added = 0;
       // Proses baris data, mulai setelah header + 1 baris hint
-      for (let i = headerRowIdx + 2; i < raw.length; i++) {
+      for (let i = headerRowIdx + 1; i < raw.length; i++) {
         const row = raw[i];
         const lminRaw = row[iLmin];
         // Skip baris kosong atau bukan angka
@@ -988,9 +986,7 @@ function importAcuan(event) {
         const ltengah = parseFloat(row[iLtengah]);
         const kubik   = parseFloat(row[iKubik]);
         const gol     = (row[iGol] || '').toString().trim().toUpperCase();
-        const harga   = parseFloat((row[iHarga] || '').toString().replace(/[^0-9.]/g, ''));
-
-        if (!isNaN(lmin) && !isNaN(lmax) && !isNaN(ltengah) && !isNaN(kubik) && gol && !isNaN(harga) && harga > 0) {
+        if (!isNaN(lmin) && !isNaN(lmax) && !isNaN(ltengah) && !isNaN(kubik) && gol) {
           dataAcuan.push({ lmin, lmax, ltengah, kubik, gol });
           added++;
         }
