@@ -44,20 +44,27 @@
     width: 100%;
   }
 
+  /* HEADER WRAPPER */
+  .header-wrap {
+    width: 100%;
+    background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 100%);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  }
+
   /* HEADER */
   header {
-    background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 100%);
     color: white;
     padding: 18px 32px;
     display: flex;
     align-items: center;
     gap: 14px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-    position: sticky; top: 0; z-index: 100;
+    max-width: 1400px;
+    margin: 0 auto;
     width: 100%;
     box-sizing: border-box;
-    left: 0;
-    right: 0;
   }
   header .logo-icon {
     width: 42px; height: 42px;
@@ -410,7 +417,7 @@
     .stat-card { padding: 12px 14px; width: 100%; }
     .stat-value { font-size: 18px; }
     .right-col { display: flex; flex-direction: column; }
-    header { padding: 10px 8px; position: relative; }
+    header { padding: 10px 8px; }
     header h1 { font-size: 15px; }
     header p { display: none; }
     header .logo-icon { width: 34px; height: 34px; font-size: 18px; }
@@ -464,17 +471,19 @@
 </head>
 <body>
 
-<!-- HEADER -->
-<header>
-  <div class="logo-icon">🪵</div>
-  <div>
-    <h1>Kalkulator Kayu Pro</h1>
-    <p>Sistem Perhitungan Nilai Penjualan Kayu Profesional</p>
-  </div>
-  <div class="header-right">
-    <span class="header-badge" id="tgl-header"></span>
-  </div>
-</header>
+<!-- HEADER WRAPPER - full width -->
+<div class="header-wrap">
+  <header>
+    <div class="logo-icon">🪵</div>
+    <div>
+      <h1>Kalkulator Kayu Pro</h1>
+      <p>Sistem Perhitungan Nilai Penjualan Kayu Profesional</p>
+    </div>
+    <div class="header-right">
+      <span class="header-badge" id="tgl-header"></span>
+    </div>
+  </header>
+</div>
 
 <div class="main-wrap">
 
