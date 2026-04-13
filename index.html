@@ -374,13 +374,93 @@
     .two-col { grid-template-columns: 1fr; }
     .right-col { position: static; }
   }
-  @media (max-width: 700px) {
-    .stat-grid { grid-template-columns: 1fr; }
+
+  /* ===== TABLET (max 768px) ===== */
+  @media (max-width: 768px) {
+    .stat-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .two-col { grid-template-columns: 1fr; gap: 14px; }
+    .right-col { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .main-wrap { padding: 14px 12px; }
+    header { padding: 12px 16px; }
+    header h1 { font-size: 17px; }
+    .card-header { padding: 12px 14px; flex-direction: column; align-items: flex-start; gap: 8px; }
+    .card-body { padding: 14px; }
+    .acuan-form-row { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .input-pohon-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .input-pohon-row > div:last-child { grid-column: span 2; }
+    .ringkasan-grid { grid-template-columns: 1fr; gap: 14px; }
+    .simpan-bar { flex-direction: column; align-items: stretch; gap: 10px; padding: 14px; }
+    .btn-simpan { justify-content: center; }
+    .btn-group { gap: 6px; }
+    .btn-group .btn { font-size: 11px; padding: 5px 9px; }
+    .preset-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .export-btn-row .btn { font-size: 12px; }
+  }
+
+  /* ===== MOBILE (max 480px) ===== */
+  @media (max-width: 480px) {
+    .stat-grid { grid-template-columns: 1fr; gap: 8px; margin-bottom: 12px; }
+    .stat-card { padding: 12px 14px; }
+    .stat-value { font-size: 18px; }
+    .right-col { display: flex; flex-direction: column; }
+    header { padding: 10px 14px; }
+    header h1 { font-size: 15px; }
+    header p { display: none; }
+    header .logo-icon { width: 34px; height: 34px; font-size: 18px; }
+    .header-badge { display: none; }
+    .main-wrap { padding: 10px 10px; }
+    .card-header { padding: 10px 12px; }
+    .card-body { padding: 12px; }
+    .card-header h2 { font-size: 13px; }
+
+    /* Tombol header acuan - susun vertikal */
+    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
+    .btn-group .btn { font-size: 11px; padding: 7px 8px; justify-content: center; }
+
+    /* Form acuan - 2 kolom */
+    .acuan-form-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .acuan-form-row > div:last-child { grid-column: span 2; }
+    .acuan-form-row > div:last-child button { width: 100%; justify-content: center; }
+
+    /* Input pohon - 1 kolom */
+    .input-pohon-row { grid-template-columns: 1fr; gap: 8px; }
+    .input-pohon-row > div:last-child { grid-column: auto; }
+    .input-pohon-row > div:last-child button { width: 100%; justify-content: center; }
+
+    /* Preview box */
+    .preview-box { gap: 10px; }
+    .preview-item span:last-child { font-size: 13px; }
+
+    /* Tabel - font lebih kecil */
+    .tabel-pohon th { font-size: 10px; padding: 8px 8px; }
+    .tabel-pohon td { font-size: 11px; padding: 8px 8px; }
+    th { font-size: 10px; padding: 8px 10px; }
+    td { padding: 8px 10px; font-size: 12px; }
+
+    /* Ringkasan */
     .ringkasan-grid { grid-template-columns: 1fr; }
-    .input-pohon-row { grid-template-columns: 1fr 1fr; }
-    .acuan-form-row { grid-template-columns: 1fr 1fr; }
-    header { padding: 14px 16px; }
-    .main-wrap { padding: 14px 10px; }
+    .total-baris.total-akhir { font-size: 14px; }
+    .total-akhir-val { font-size: 15px; }
+    .summary-row { font-size: 13px; }
+
+    /* Simpan bar */
+    .simpan-bar { padding: 12px; flex-direction: column; align-items: stretch; }
+    .btn-simpan { width: 100%; justify-content: center; font-size: 14px; padding: 12px; }
+
+    /* Kalkulator */
+    .calc-btn { padding: 14px 4px; font-size: 15px; }
+    .calc-display { font-size: 24px; min-height: 60px; }
+
+    /* Preset */
+    .preset-bar { flex-direction: column; align-items: flex-start; padding: 10px; }
+    .btn-save-preset { width: 100%; text-align: center; justify-content: center; padding: 8px; }
+
+    /* Export */
+    .export-btn-row { grid-template-columns: 1fr 1fr; }
+    .export-btn-row .btn { padding: 10px 8px; font-size: 12px; }
+
+    /* Riwayat */
+    .riwayat-item { font-size: 12px; padding: 8px 10px; }
   }
 </style>
 </head>
