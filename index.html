@@ -701,13 +701,6 @@ let riwayat   = JSON.parse(localStorage.getItem('kk_riwayat') || '[]');
 // Kalkulator state
 let calcVal = '0', calcExpr = '', calcOp = null, calcPrev = null, calcNewNum = true;
 
-// ==================== INIT ====================
-document.getElementById('tgl-header').textContent = new Date().toLocaleDateString('id-ID', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
-renderAcuan();
-renderRiwayat();
-renderPresetChips();
-
-
 // ==================== PRESET DATA ACUAN ====================
 const BUILTIN_PRESETS = [
   { id: 'gamelina', nama: 'Gamelina', builtin: true, data: [{lmin:70,lmax:70,ltengah:22,kubik:0.38,gol:'A3'},{lmin:72,lmax:72,ltengah:22.9,kubik:0.41,gol:'A3'},{lmin:73,lmax:73,ltengah:23,kubik:0.41,gol:'A3'},{lmin:74,lmax:74,ltengah:23.5,kubik:0.43,gol:'A3'},{lmin:75,lmax:75,ltengah:24,kubik:0.45,gol:'A3'},{lmin:78,lmax:78,ltengah:25,kubik:0.49,gol:'A3'},{lmin:80,lmax:80,ltengah:25.4,kubik:0.51,gol:'A3'},{lmin:84,lmax:84,ltengah:26.7,kubik:0.55,gol:'A3'},{lmin:85,lmax:85,ltengah:27,kubik:0.57,gol:'A3'},{lmin:90,lmax:90,ltengah:28.6,kubik:0.64,gol:'A3'},{lmin:95,lmax:95,ltengah:30,kubik:0.7,gol:'A4'},{lmin:100,lmax:100,ltengah:31.8,kubik:0.79,gol:'A4'},{lmin:103,lmax:103,ltengah:32.8,kubik:0.84,gol:'A4'},{lmin:110,lmax:110,ltengah:35,kubik:0.96,gol:'A4'},{lmin:115,lmax:115,ltengah:36.6,kubik:0.96,gol:'A4'},{lmin:120,lmax:120,ltengah:38,kubik:1.13,gol:'A4'},{lmin:125,lmax:125,ltengah:39.8,kubik:1.24,gol:'A4'},{lmin:130,lmax:130,ltengah:41.4,kubik:1.35,gol:'A5'},{lmin:140,lmax:140,ltengah:44.5,kubik:1.55,gol:'A5'},{lmin:150,lmax:150,ltengah:47.77,kubik:1.79,gol:'A5'},{lmin:160,lmax:160,ltengah:53.3,kubik:2.03,gol:'A5'}] },
@@ -728,12 +721,38 @@ function getAllPresets() {
 function renderPresetChips() {
   const wrap = document.getElementById('preset-chips');
   const all = getAllPresets();
-  if (!all.length) { wrap.innerHTML = '<span style="font-size:12px;color:var(--gray-500)">Belum ada preset tersimpan.</span>'; return; }
-  wrap.innerHTML = all.map(p => {
-    const isActive = p.id === activePresetId;
-    const delBtn = p.builtin ? '' : `<span class="chip-del" onclick="hapusPreset(event,'${p.id}')" title="Hapus">✕</span>`;
-    return `<span class="preset-chip ${isActive?'active':''} ${p.builtin?'builtin':''}" onclick="pakaiPreset('${p.id}')">${p.nama}${delBtn}</span>`;
-  }).join('');
+  if (!all.length) {
+    wrap.innerHTML = '<span style="font-size:12px;color:var(--gray-500)">Belum ada preset.</span>';
+    return;
+  }
+  wrap.innerHTML = '';
+  all.forEach(p => {
+    const chip = document.createElement('span');
+    chip.className = 'preset-chip' + (p.id === activePresetId ? ' active' : '') + (p.builtin ? ' builtin' : '');
+
+    const label = document.createElement('span');
+    label.textContent = p.nama;
+    label.style.pointerEvents = 'none';
+    chip.appendChild(label);
+
+    if (!p.builtin) {
+      const del = document.createElement('span');
+      del.className = 'chip-del';
+      del.textContent = ' ✕';
+      del.title = 'Hapus preset';
+      del.addEventListener('click', function(e) {
+        e.stopPropagation();
+        hapusPreset(p.id);
+      });
+      chip.appendChild(del);
+    }
+
+    chip.addEventListener('click', function() {
+      pakaiPreset(p.id);
+    });
+
+    wrap.appendChild(chip);
+  });
 }
 
 function pakaiPreset(id) {
@@ -741,33 +760,35 @@ function pakaiPreset(id) {
   const preset = all.find(p => p.id === id);
   if (!preset) return;
   if (activePresetId === id) {
-    // Toggle off — kosongkan
-    if (!confirm('Nonaktifkan preset dan hapus data acuan yang sedang aktif?')) return;
     dataAcuan = [];
     activePresetId = null;
-  } else {
-    if (dataAcuan.length && activePresetId !== id) {
-      if (!confirm('Mengganti preset akan mengganti data acuan saat ini. Lanjutkan?')) return;
-    }
-    dataAcuan = JSON.parse(JSON.stringify(preset.data));
-    activePresetId = id;
-    showToast('✅ Preset "' + preset.nama + '" diaktifkan (' + preset.data.length + ' data)');
+    saveAcuan();
+    renderAcuan();
+    renderPresetChips();
+    showToast('Preset dinonaktifkan');
+    return;
   }
+  dataAcuan = JSON.parse(JSON.stringify(preset.data));
+  activePresetId = id;
   saveAcuan();
   renderAcuan();
   renderPresetChips();
+  showToast('\u2705 Preset "' + preset.nama + '" diaktifkan (' + preset.data.length + ' data)');
 }
 
-function hapusPreset(e, id) {
-  e.stopPropagation();
+function hapusPreset(id) {
   const p = presetList.find(x => x.id === id);
   if (!p) return;
-  if (!confirm('Hapus preset "' + p.nama + '"?')) return;
   presetList = presetList.filter(x => x.id !== id);
-  if (activePresetId === id) activePresetId = null;
+  if (activePresetId === id) {
+    activePresetId = null;
+    dataAcuan = [];
+    saveAcuan();
+    renderAcuan();
+  }
   savePresets();
   renderPresetChips();
-  showToast('🗑 Preset dihapus');
+  showToast('\uD83D\uDDD1 Preset "' + p.nama + '" dihapus');
 }
 
 function bukaSimpanPreset() {
@@ -788,6 +809,12 @@ function konfirmasiSimpanPreset() {
   document.getElementById('modal-preset').style.display = 'none';
   showToast('✅ Preset "' + nama + '" berhasil disimpan!');
 }
+
+// ==================== INIT ====================
+document.getElementById('tgl-header').textContent = new Date().toLocaleDateString('id-ID', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+renderAcuan();
+renderRiwayat();
+renderPresetChips();
 
 // ==================== DATA ACUAN ====================
 function tambahAcuan() {
