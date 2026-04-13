@@ -46,12 +46,15 @@
 
   /* HEADER WRAPPER */
   .header-wrap {
-    width: 100%;
+    width: 100vw;
+    max-width: 100%;
     background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 100%);
     position: sticky;
     top: 0;
+    left: 0;
     z-index: 100;
     box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    box-sizing: border-box;
   }
 
   /* HEADER */
@@ -61,8 +64,6 @@
     display: flex;
     align-items: center;
     gap: 14px;
-    max-width: 1400px;
-    margin: 0 auto;
     width: 100%;
     box-sizing: border-box;
   }
