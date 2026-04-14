@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" style="margin:0;padding:0;width:100%">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,7 +32,8 @@
     --radius: 12px;
     --radius-sm: 8px;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
   body {
     font-family: 'Plus Jakarta Sans', sans-serif;
     background: #f0f4f0;
@@ -41,30 +42,21 @@
     min-height: 100vh;
     margin: 0;
     padding: 0;
-    width: 100%;
   }
 
   /* HEADER WRAPPER */
-  .header-wrap {
-    width: 100vw;
-    max-width: 100%;
-    background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 100%);
-    position: sticky;
-    top: 0;
-    left: 0;
-    z-index: 100;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-    box-sizing: border-box;
-  }
-
   /* HEADER */
   header {
+    background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 100%);
     color: white;
     padding: 18px 32px;
     display: flex;
     align-items: center;
     gap: 14px;
-    width: 100%;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    position: sticky;
+    top: 0;
+    z-index: 100;
     box-sizing: border-box;
   }
   header .logo-icon {
@@ -472,19 +464,17 @@
 </head>
 <body>
 
-<!-- HEADER WRAPPER - full width -->
-<div class="header-wrap">
-  <header>
-    <div class="logo-icon">🪵</div>
-    <div>
-      <h1>Kalkulator Kayu Pro</h1>
-      <p>Sistem Perhitungan Nilai Penjualan Kayu Profesional</p>
-    </div>
-    <div class="header-right">
-      <span class="header-badge" id="tgl-header"></span>
-    </div>
-  </header>
-</div>
+<!-- HEADER -->
+<header>
+  <div class="logo-icon">🪵</div>
+  <div>
+    <h1>Kalkulator Kayu Pro</h1>
+    <p>Sistem Perhitungan Nilai Penjualan Kayu Profesional</p>
+  </div>
+  <div class="header-right">
+    <span class="header-badge" id="tgl-header"></span>
+  </div>
+</header>
 
 <div class="main-wrap">
 
