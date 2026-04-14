@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
 <title>Kalkulator Kayu Pro</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -32,8 +32,9 @@
     --radius: 12px;
     --radius-sm: 8px;
   }
-  *, *::before, *::after { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { width: 100%; }
+  body { width: 100%; margin: 0; padding: 0; }
   body {
     font-family: 'Plus Jakarta Sans', sans-serif;
     background: #f0f4f0;
@@ -56,8 +57,11 @@
     box-shadow: 0 2px 12px rgba(0,0,0,0.18);
     position: sticky;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 100;
     box-sizing: border-box;
+    width: 100%;
   }
   header .logo-icon {
     width: 42px; height: 42px;
@@ -80,7 +84,7 @@
   }
 
   /* LAYOUT */
-  .main-wrap { max-width: 1400px; margin: 0 auto; padding: 24px 20px; }
+  .main-wrap { max-width: 1400px; margin: 0 auto; padding: 24px 20px; overflow-x: hidden; }
 
   /* STAT CARDS */
   .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
@@ -107,8 +111,8 @@
   .stat-value { font-size: 22px; font-weight: 700; color: var(--gray-900); font-family: inherit; margin-top: 2px; }
 
   /* TWO COLUMN */
-  .two-col { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
-  .left-col { display: flex; flex-direction: column; gap: 20px; }
+  .two-col { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; min-width: 0; }
+  .left-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; overflow: hidden; }
   .right-col { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 90px; }
 
   /* CARDS */
@@ -151,7 +155,7 @@
   .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
 
   /* TABLE DATA ACUAN */
-  .table-wrap { overflow-x: auto; }
+  .table-wrap { overflow-x: auto; max-width: 100%; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th {
     background: var(--green-dark);
