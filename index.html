@@ -552,19 +552,19 @@
           <div class="acuan-form-row">
             <div class="form-group">
               <label>Lingkar Min</label>
-              <input type="number" id="ac-lmin" placeholder="cth: 20" min="0">
+              <input type="text" inputmode="decimal" id="ac-lmin" placeholder="cth: 20">
             </div>
             <div class="form-group">
               <label>Lingkar Max</label>
-              <input type="number" id="ac-lmax" placeholder="cth: 40" min="0">
+              <input type="text" inputmode="decimal" id="ac-lmax" placeholder="cth: 40">
             </div>
             <div class="form-group">
               <label>Lingkar Tengah</label>
-              <input type="number" id="ac-ltengah" placeholder="cth: 30" min="0">
+              <input type="text" inputmode="decimal" id="ac-ltengah" placeholder="cth: 30">
             </div>
             <div class="form-group">
               <label>Kubikasi (m³)</label>
-              <input type="number" id="ac-kubik" placeholder="cth: 0.0700" step="0.0001" min="0">
+              <input type="text" inputmode="decimal" id="ac-kubik" placeholder="cth: 0,0700">
             </div>
             <div class="form-group">
               <label>Golongan</label>
@@ -587,15 +587,15 @@
           <div class="input-pohon-row">
             <div class="form-group">
               <label>Lingkar Kayu (cm)</label>
-              <input type="number" id="in-lingkar" placeholder="Contoh: 120" min="0" oninput="previewPohon()">
+              <input type="text" inputmode="decimal" id="in-lingkar" placeholder="Contoh: 120" oninput="previewPohon()">
             </div>
             <div class="form-group">
               <label>Jumlah Batang</label>
-              <input type="number" id="in-jumlah" placeholder="1" value="1" min="1" oninput="previewPohon()">
+              <input type="text" inputmode="numeric" id="in-jumlah" placeholder="1" value="1" oninput="previewPohon()">
             </div>
             <div class="form-group">
               <label>Harga per Kubik (Rp)</label>
-              <input type="number" id="in-harga" placeholder="Otomatis dari acuan" min="0" oninput="previewPohon()">
+              <input type="text" inputmode="numeric" id="in-harga" placeholder="Otomatis dari acuan" oninput="previewPohon()">
             </div>
             <div>
               <label style="font-size:11px;color:transparent;display:block;margin-bottom:5px;">-</label>
@@ -655,7 +655,7 @@
             <div class="potongan-box">
               <h4>✂ Potongan Nilai Kayu</h4>
               <div class="potongan-input-row">
-                <input type="number" id="pct-input" placeholder="Contoh: 5" min="0" max="100" oninput="hitungPotongan()">
+                <input type="text" inputmode="decimal" id="pct-input" placeholder="Contoh: 5" oninput="hitungPotongan()">
                 <span>%</span>
               </div>
               <p class="potongan-hint">Contoh: kayu retak, bengkok, berlubang</p>
@@ -783,6 +783,63 @@ let riwayat   = JSON.parse(localStorage.getItem('kk_riwayat') || '[]');
 // Kalkulator state
 let calcVal = '0', calcExpr = '', calcOp = null, calcPrev = null, calcNewNum = true;
 
+// ==================== NUMBER INPUT MASKING ====================
+// IDs that allow decimals (comma as separator)
+const DECIMAL_INPUT_IDS = ['ac-lmin','ac-lmax','ac-ltengah','ac-kubik','in-lingkar','pct-input'];
+// IDs that are integer-only
+const INTEGER_INPUT_IDS = ['in-jumlah','in-harga'];
+
+function parseNumVal(str) {
+  if (!str) return NaN;
+  // Remove all dots (thousands separator), replace comma with dot for float parsing
+  return parseFloat(str.replace(/\./g, '').replace(',', '.'));
+}
+
+function formatThousands(str) {
+  // Split on comma (decimal separator)
+  const parts = str.split(',');
+  // Format integer part with dots
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return parts.join(',');
+}
+
+function onNumericInput(e) {
+  const el = e.target;
+  const isDecimal = DECIMAL_INPUT_IDS.includes(el.id);
+  const raw = el.value;
+  const cursorPos = el.selectionStart;
+
+  // Allow only digits, comma (decimal), and ignore others
+  let cleaned = raw.replace(/[^0-9,]/g, '');
+  // Only one comma allowed
+  const commaIdx = cleaned.indexOf(',');
+  if (commaIdx !== -1) {
+    cleaned = cleaned.slice(0, commaIdx + 1) + cleaned.slice(commaIdx + 1).replace(/,/g, '');
+  }
+  if (!isDecimal) {
+    // No commas for integer fields
+    cleaned = cleaned.replace(/,/g, '');
+  }
+
+  const formatted = formatThousands(cleaned);
+
+  // Count dots before cursor in old value to adjust cursor
+  const dotsBeforeCursor = (raw.slice(0, cursorPos).match(/\./g) || []).length;
+  const dotsBeforeCursorNew = (formatThousands(cleaned.slice(0, cursorPos - dotsBeforeCursor)).match(/\./g) || []).length;
+  const newCursor = cursorPos - dotsBeforeCursor + dotsBeforeCursorNew;
+
+  el.value = formatted;
+  try { el.setSelectionRange(newCursor, newCursor); } catch(ex) {}
+}
+
+function initNumericInputs() {
+  [...DECIMAL_INPUT_IDS, ...INTEGER_INPUT_IDS].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', onNumericInput);
+  });
+}
+
 // ==================== PRESET DATA ACUAN ====================
 const BUILTIN_PRESETS = [
   { id: 'gamelina', nama: 'Gamelina', builtin: true, data: [{lmin:70,lmax:70,ltengah:22,kubik:0.38,gol:'A3'},{lmin:72,lmax:72,ltengah:22.9,kubik:0.41,gol:'A3'},{lmin:73,lmax:73,ltengah:23,kubik:0.41,gol:'A3'},{lmin:74,lmax:74,ltengah:23.5,kubik:0.43,gol:'A3'},{lmin:75,lmax:75,ltengah:24,kubik:0.45,gol:'A3'},{lmin:78,lmax:78,ltengah:25,kubik:0.49,gol:'A3'},{lmin:80,lmax:80,ltengah:25.4,kubik:0.51,gol:'A3'},{lmin:84,lmax:84,ltengah:26.7,kubik:0.55,gol:'A3'},{lmin:85,lmax:85,ltengah:27,kubik:0.57,gol:'A3'},{lmin:90,lmax:90,ltengah:28.6,kubik:0.64,gol:'A3'},{lmin:95,lmax:95,ltengah:30,kubik:0.7,gol:'A4'},{lmin:100,lmax:100,ltengah:31.8,kubik:0.79,gol:'A4'},{lmin:103,lmax:103,ltengah:32.8,kubik:0.84,gol:'A4'},{lmin:110,lmax:110,ltengah:35,kubik:0.96,gol:'A4'},{lmin:115,lmax:115,ltengah:36.6,kubik:0.96,gol:'A4'},{lmin:120,lmax:120,ltengah:38,kubik:1.13,gol:'A4'},{lmin:125,lmax:125,ltengah:39.8,kubik:1.24,gol:'A4'},{lmin:130,lmax:130,ltengah:41.4,kubik:1.35,gol:'A5'},{lmin:140,lmax:140,ltengah:44.5,kubik:1.55,gol:'A5'},{lmin:150,lmax:150,ltengah:47.77,kubik:1.79,gol:'A5'},{lmin:160,lmax:160,ltengah:53.3,kubik:2.03,gol:'A5'}] },
@@ -897,13 +954,14 @@ document.getElementById('tgl-header').textContent = new Date().toLocaleDateStrin
 renderAcuan();
 renderRiwayat();
 renderPresetChips();
+initNumericInputs();
 
 // ==================== DATA ACUAN ====================
 function tambahAcuan() {
-  const lmin    = parseFloat(document.getElementById('ac-lmin').value);
-  const lmax    = parseFloat(document.getElementById('ac-lmax').value);
-  const ltengah = parseFloat(document.getElementById('ac-ltengah').value);
-  const kubik   = parseFloat(document.getElementById('ac-kubik').value);
+  const lmin    = parseNumVal(document.getElementById('ac-lmin').value);
+  const lmax    = parseNumVal(document.getElementById('ac-lmax').value);
+  const ltengah = parseNumVal(document.getElementById('ac-ltengah').value);
+  const kubik   = parseNumVal(document.getElementById('ac-kubik').value);
   const gol     = document.getElementById('ac-gol').value.trim().toUpperCase();
   if (isNaN(lmin)||isNaN(lmax)||isNaN(ltengah)||isNaN(kubik)||!gol) {
     showToast('⚠ Lengkapi semua field data acuan!', 'red'); return;
@@ -959,7 +1017,7 @@ function cariAcuan(lingkar) {
 
 // ==================== INPUT POHON ====================
 function previewPohon() {
-  const lingkar = parseFloat(document.getElementById('in-lingkar').value);
+  const lingkar = parseNumVal(document.getElementById('in-lingkar').value);
   const box = document.getElementById('preview-box');
   if (!lingkar || isNaN(lingkar)) {
     box.innerHTML = '<span class="preview-empty">Masukkan lingkar kayu untuk melihat referensi otomatis.</span>';
@@ -971,8 +1029,8 @@ function previewPohon() {
     document.getElementById('in-harga').value = '';
     return;
   }
-  const jumlah = parseFloat(document.getElementById('in-jumlah').value) || 1;
-  const harga  = parseFloat(document.getElementById('in-harga').value) || 0;
+  const jumlah = parseNumVal(document.getElementById('in-jumlah').value) || 1;
+  const harga  = parseNumVal(document.getElementById('in-harga').value) || 0;
   const totalK = ref.kubik * jumlah;
   const totalN = totalK * harga;
   box.innerHTML = `
@@ -988,9 +1046,9 @@ function previewPohon() {
 document.getElementById('in-harga').addEventListener('input', previewPohon);
 
 function tambahPohon() {
-  const lingkar = parseFloat(document.getElementById('in-lingkar').value);
-  const jumlah  = parseInt(document.getElementById('in-jumlah').value) || 1;
-  const hargaIn = parseFloat(document.getElementById('in-harga').value);
+  const lingkar = parseNumVal(document.getElementById('in-lingkar').value);
+  const jumlah  = Math.round(parseNumVal(document.getElementById('in-jumlah').value)) || 1;
+  const hargaIn = parseNumVal(document.getElementById('in-harga').value);
 
   if (!lingkar || isNaN(lingkar)) { showToast('⚠ Masukkan lingkar kayu!', 'red'); return; }
   const ref = cariAcuan(lingkar);
@@ -1096,7 +1154,7 @@ function updateStats() {
 
 function hitungPotongan() {
   const totalNilai = dataPohon.reduce((s,d) => s+d.totalNilai, 0);
-  const pct = parseFloat(document.getElementById('pct-input').value) || 0;
+  const pct = parseNumVal(document.getElementById('pct-input').value) || 0;
   const pot = totalNilai * (pct / 100);
   const akhir = totalNilai - pot;
 
@@ -1276,7 +1334,7 @@ function exportExcel() {
   XLSX.utils.book_append_sheet(wb, ws1, 'Data Pohon');
 
   // Sheet 2: Ringkasan
-  const pct = parseFloat(document.getElementById('pct-input').value) || 0;
+  const pct = parseNumVal(document.getElementById('pct-input').value) || 0;
   const totalNilai = dataPohon.reduce((s,d) => s+d.totalNilai, 0);
   const akhir = totalNilai * (1 - pct/100);
   const ws2 = XLSX.utils.aoa_to_sheet([
@@ -1302,7 +1360,7 @@ function exportPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-  const pct = parseFloat(document.getElementById('pct-input').value) || 0;
+  const pct = parseNumVal(document.getElementById('pct-input').value) || 0;
   const totalNilai = dataPohon.reduce((s,d) => s+d.totalNilai, 0);
   const totalKubik = dataPohon.reduce((s,d) => s+d.totalKubik, 0);
   const totalBatang = dataPohon.reduce((s,d) => s+d.jumlah, 0);
